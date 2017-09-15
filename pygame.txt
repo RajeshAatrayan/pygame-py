@@ -1,0 +1,112 @@
+import pygame,sys,time,random #importing pygame module|and sys for exiting from the console
+pygame.init()#initiating pygame here
+gamedisplay=pygame.display.set_mode((720,680))#setting the pygame console in tuples
+pygame.display.set_caption('Snake game!')#setting name for the game
+red=pygame.Color(255,0,0)#importing pygame color|must import to use it in the future development
+white=pygame.Color(255,255,255)#(r|g|b)
+green=pygame.Color(0,255,0)
+brown=pygame.Color(165,42,42)
+black=pygame.Color(0,0,0)
+
+#fps contoller
+fps=pygame.time.Clock()#setting frames per second
+
+#important varaibles:
+snakepos=[100,50]
+snake_body=[[100,50],[90,50],[80,50]]#consists three nested lists
+
+foodpos=[random.randrange(1,72)*10,random.randrange(1,68)*10]#generating random x and y food
+foodspwan=True
+#diretion
+direction='RIGHT'
+changeto=direction
+score=0#pre declared to use this variable further
+
+#game over function!
+def gameover():
+    myfont=pygame.font.SysFont("monaco",72)#setting font
+    gosurf=myfont.render("GAME OVER",True,red)#render has three-4 arguments("message",Boolean,Color)
+    gorect=gosurf.get_rect()#making that message as rectangle
+    gorect.midtop=(720/2,680/2)#midtop is function assigning the x and y for the meassage
+    gamedisplay.blit(gosurf,gorect)#blit have two arguments 1st is rendered variable,and position ie..gorect
+    pygame.display.flip()#kind of updating function in python
+    showScore(0)
+    #must use sleep to see the changes
+    time.sleep(1)#sleeps for 1sec
+    pygame.quit()#game quit
+    sys.exit()#console close
+def showScore(choice=1):
+    sFont = pygame.font.SysFont('monaco', 24)
+    Ssurf = sFont.render('Score : {0}'.format(score), True, black)#.format is kind of datatype conversion
+    Srect = Ssurf.get_rect()
+    if choice == 1:
+        Srect.midtop = (80, 10)
+    else:
+        Srect.midtop = (360, 120)
+    gamedisplay.blit(Ssurf, Srect)
+    pygame.display.update()
+#main loop creation
+
+while True:#infinit loop
+    for event in pygame.event.get():#getting from pygame events
+        if event.type==pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type==pygame.KEYDOWN:#when you press keydown
+            if event.key==pygame.K_RIGHT or event.type==ord('d'):
+                changeto='RIGHT'
+            if event.key == pygame.K_LEFT or event.type == ord('a'):
+                changeto='LEFT'
+            if event.key == pygame.K_UP or event.type == ord('w'):
+                changeto='UP'
+            if event.key == pygame.K_DOWN or event.type == ord('s'):
+                changeto='DOWN'
+            if event.key==pygame.K_ESCAPE:
+                pygame.event.post(pygame.event.Event(pygame.QUIT))#WE ARE CREATING An EVENT Here
+
+#valid directions
+    if changeto=='RIGHT' and not direction=='LEFT':
+        direction='RIGHT'
+    if changeto=='LEFT' and not direction=='RIGHT':
+        direction='LEFT'
+    if changeto=='UP' and not direction=='DOWN':
+        direction='UP'
+    if changeto=='DOWN' and not direction=='UP':
+        direction='DOWN'
+            #UPDATING SNAKE POSTION
+    if direction=='RIGHT':
+        snakepos[0]+=10
+
+    if direction=='LEFT':
+        snakepos[0]-=10
+    if direction=='UP':
+        snakepos[1]-=10
+    if direction=='DOWN':
+        snakepos[1]+=10
+            #SNAKE BODY MECH
+    snake_body.insert(0,list(snakepos))#inserting snake pos into snake head!
+    if snakepos[0]==foodpos[0] and snakepos[1]==foodpos[1]:#eating mechanism
+        score += 1
+        foodspwan=False
+    else:
+        snake_body.pop()#it will delete any alternative node from the snake body
+    if foodspwan==False:
+        foodpos=[random.randrange(1,72)*10,random.randrange(1,68)*10]#again setting random food position
+    foodspwan=True
+    gamedisplay.fill(white)#setting console color
+    for pos in snake_body:
+        pygame.draw.rect(gamedisplay,green,pygame.Rect(pos[0],pos[1],10,10))#drawing snake
+        pygame.draw.rect(gamedisplay,brown,pygame.Rect(foodpos[0],foodpos[1],10,10))#food position
+    if snakepos[0] > 710 or snakepos[0]<0 :#setting  bounds
+        gameover()#calling gameover function
+    if snakepos[1] > 680 or snakepos[1]<0 :
+        gameover()
+    for block in snake_body[1:]:#if snake hits itself
+        if snakepos[0]==block[0] and snakepos[1]==block[1]:
+            gameover()
+
+    pygame.display.update()#updating whole display
+    showScore()
+    fps.tick(15)
+
+
